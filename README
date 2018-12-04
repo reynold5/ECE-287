@@ -1,0 +1,6 @@
+Project Title: Morse Code to English Translator
+Equipment Used: Altera DE2-115 FPGA, Quartus
+
+This is part of a final progect for our ECE 287-Digital Systems Design class.  This project takes Morse Code inputs from the user,
+through 4 switches located on the FPGA, and translates the input into it's English text component via the seven segment displays 
+on the FPGA. 
