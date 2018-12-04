@@ -1,0 +1,38 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_unsigned.all;
+
+entity sequencing is
+	port ( clk : in std_logic;
+	       origInputs : in std_logic_vector(3 downto 0);
+		    numbits: out std_logic_vector(2 downto 0);
+	       internalet: out std_logic_vector(4 downto 0));
+end sequencing;
+
+architecture cont of sequencing is
+   type SM is (begin1, collect, noinput, done);
+   signal state: SM;
+   signal shiftReg:  std_logic_vector(4 downto 0);
+	signal count:      std_logic_vector(2 downto 0);
+	signal Morse:  std_logic_vector(4 downto 0);
+   signal userinput: std_logic;
+   signal beginsequence: std_logic;
+
+  begin
+
+  assign: process(clk)
+  --Process for reading Morse code from user input 
+  begin 
+  --Assigns states for later use
+  --Intial input taken from user
+     if(clk'event and clk='1') then --Begin switch is pressed by user
+       if    (origInputs(3)='1') then
+          state <= begin1;   
+	    elsif (origInputs(0)='1') then
+	       state <= done;
+	    elsif (origInputs(1)='1' or origInputs(2)='1') then
+	       state <= collect;
+	    else
+	       state <= noinput; --No input from user
+	    end if;
+	  end if;
