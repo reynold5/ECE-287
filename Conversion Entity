@@ -1,0 +1,118 @@
+----------------------------------------------------------------------------------------------------- 
+--Conversion Entity, identifies inputsR sequence of input sequences and collects 5 bit inputsR equivalents 
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_unsigned.all;
+
+entity sequencing is
+	port ( clk : in std_logic;
+	       origInputs : in std_logic_vector(3 downto 0);
+		    numbits: out std_logic_vector(2 downto 0);
+	       internalet: out std_logic_vector(4 downto 0));
+end sequencing;
+
+architecture cont of sequencing is
+   --interal signals used to connect various entities, used throughout 
+   type SM is (begin1, collect, noinput, done);
+   signal state: SM;
+   signal shiftReg:  std_logic_vector(4 downto 0);
+	signal count:      std_logic_vector(2 downto 0);
+	signal inputsR:  std_logic_vector(4 downto 0);
+   signal userinput: std_logic;
+   signal beginsequence: std_logic;
+
+  begin
+  assign: process(clk)
+  --Process for reading inputsR code from user input 
+  begin 
+  --Assigns states for later use
+  --Intial input taken from user
+     if(clk'event and clk='1') then --Begin switch is pressed by user
+       if    (origInputs(3)='1') then
+          state <= begin1;   
+	    elsif (origInputs(0)='1') then
+	       state <= done;
+	    elsif (origInputs(1)='1' or origInputs(2)='1') then
+	       state <= collect;
+	    else
+	       state <= noinput; --No input from user
+	    end if;
+	  end if;
+   --When begin button is pressed, shift register being to collect on shiftReg
+    if(clk'event and clk='1') then   
+	    case state is
+	         when begin1 => --Starts being cycle for shift register
+	            inputsR <= "10101";
+	            shiftReg <= "00000"; --No inputs in shift register, starter state
+			  	   count <= "000"; --No inputs in counter, stater state
+			  	   userinput <= '0';  
+			  	   beginsequence <= '1';     
+            --Counter is implimented here to collect inputs from user
+	         when collect =>
+	            if(userinput = '0' and beginsequence = '1') then 
+	               --If statement that collects inputs from dot and dash switches         
+	               if       (origInputs = "0100") then
+	                           shiftReg    <=    (shiftReg(3 downto 0) & '1');	--Dash is collected in shiftReg
+	                           count        <=    (count + 1); --ad 1 to counter
+	               elsif   (origInputs = "0010") then
+	                           shiftReg    <=    (shiftReg(3 downto 0) & '0');	--Dot is collected in shiftReg
+	                           count        <=    (count + 1); --add 1 to counter
+	               else        shiftReg(4 downto 0) <= shiftReg(4 downto 0); --No change in shiftReg
+	                           count(2 downto 0) <= count(2 downto 0); --total count is stored
+	               end if;
+	               userinput <= '1';         
+	            end if;  	
+	         when noinput => --No input is received from the user, registers stop collecting
+	             	     shiftReg(4 downto 0) <= shiftReg(4 downto 0); --No input received
+	                    count(2 downto 0)         <= count(2 downto 0);
+	                    inputsR                 <= "10101";
+	                    userinput            <= '0';  
+     
+		--Inputs stored in 5 bit shift register, later converted to 7 segment display	
+	         when done =>
+	            beginsequence <= '0';
+	            case count is
+	               when "001" => --Binary equivalent for 1 term inputsR 
+	                  if    (shiftReg = 0) then 	inputsR <= "00000";--E		
+	                  elsif (shiftReg = 1) then 	inputsR <= "00001";--T	
+	                  end if;
+	               when"010"=> --Binary equivalent for 2 term inputsR
+	                  if    (shiftReg = 0) then 	inputsR <= "00000";
+	                  elsif (shiftReg = 1) then 	inputsR <= "00001";--A		
+ 	                  elsif (shiftReg = 2) then 	inputsR <= "00010";--N	
+ 	                  elsif (shiftReg = 3) then 	inputsR <= "00011";--M		
+	                  end if;
+	               when "011" => --Binary equivalent for 3 term inputsR
+	                  if    (shiftReg = 0) then 	inputsR <= "00000";--S
+	                  elsif (shiftReg = 1) then 	inputsR <= "00001";--U		
+	                  elsif (shiftReg = 2) then 	inputsR <= "00010";--R		
+	                  elsif (shiftReg = 3) then 	inputsR <= "00011";--W		
+	                  elsif (shiftReg = 4) then 	inputsR <= "00100";--D		
+ 	                  elsif (shiftReg = 5) then 	inputsR <= "00101";--K		
+ 	                  elsif (shiftReg = 6) then 	inputsR <= "00110";--G		
+ 	                  elsif (shiftReg = 7) then 	inputsR <= "00111";--O		
+	                  end if;
+	               when "100" => --Binary equivalent for 4 term inputsR
+	                  if    (shiftReg = 0) then	inputsR <= "00000";--H 
+	                  elsif (shiftReg = 1) then 	inputsR <= "00001";--V
+		      elsif (shiftReg = 13)then 	inputsR <= "01101";--Q	
+  	                  elsif (shiftReg = 4) then 	inputsR <= "00100";--L			 
+                     elsif (shiftReg = 6) then 	inputsR <= "00110";--P 	
+  	                  elsif (shiftReg = 7) then 	inputsR <= "00111";--J	
+	                  elsif (shiftReg = 8) then 	inputsR <= "01000";--B	
+ 	                  elsif (shiftReg = 9) then 	inputsR <= "01001";--X	
+ 	                  elsif (shiftReg = 10)then 	inputsR <= "01010";--C	
+	                  elsif (shiftReg = 11)then 	inputsR <= "01011";--Y	
+	                  elsif (shiftReg = 12)then 	inputsR <= "01100";--Z		
+	                  elsif (shiftReg = 2) then 	inputsR <= "00010";--F	
+	                  end if;
+	               when others => inputsR <= "10101"; 
+               end case;	           
+	   end case;
+   end if;--Display turns off	   
+end process assign;
+    numbits <= count;
+	internalet <= inputsR;           
+end cont;
+--Bits need for display are send to display7
+--inputsR 5 bits is sent to display7
