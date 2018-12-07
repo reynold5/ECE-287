@@ -1,21 +1,26 @@
+------------------------------------------------------------------------------------------------------------
 --Top Level Unit for all Entities
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.STD_LOGIC_unsigned.all;
 
+--Actual in/out ports used in pin assignments 
 entity toplevel is
 	port(begin1, dash, dot, end1, clk: in std_logic;
 		  display7_out: out std_logic_vector(6 downto 0));
+		  --display7_out1: out std_logic_vector(6 downto 0));
 end entity;
-
-architecture morse of toplevel is
+--Internal signals used in shift register operation
+architecture inputsR of toplevel is
   component display7 is 
 	   port (clk: in std_logic;
 	         count: in std_logic_vector (2 downto 0);
 			   internalet: in std_logic_vector (4 downto 0);
 			   segControl: out std_logic_vector(6 downto 0));
+			   segControl1: out std_logic_vector(6 downto 0));			
   end component;
-  
+
+ --More internal signals used as input shift register and initial input bit storage
   component sequencing is
 	port ( clk : in std_logic;
 	       origInputs : in std_logic_vector(3 downto 0);
@@ -27,21 +32,22 @@ architecture morse of toplevel is
 	port(clk, begin1, dash, dot, end1 : in std_logic;
 		  intial_inputs : out std_logic_vector(3 downto 0));
   end component;
-	
+
+ --Mapping of internal signals used throughout various entities 
 	signal counter : std_logic_vector(2 downto 0);
 	signal internalet : std_logic_vector(4 downto 0);
 	signal holdbegin1, holddash, holddot, holdend1: std_logic;
 	signal origInputs : std_logic_vector(3 downto 0);
+	--signal segcontrol1: out std_logic_vector(6 downto 0);
+	
 begin
-	holdbegin1 <= begin1;
-	holddash <= dash;
-	holddot <= dot;
-	holdend1 <= end1;
-
+	holdbegin1 <= begin1; holddash <= dash; holddot <= dot;holdend1 <= end1;
+	
 	SEQUENCE: initialize
 		port map(clk, holdbegin1, holddash, holddot, holdend1, origInputs);
-INPUT: sequencing
+	INPUT: sequencing
 		port map(clk, origInputs, counter, internalet);
-	DISPLAY: display7
-	   port map(clk, counter, internalet , display7_out);   			    
+	Display: display7
+	   port map(clk, counter, internalet , display7_out); --display7_out1);  
+		--port map(clk, counter, internalet , display7_out1); 
 end architecture;
