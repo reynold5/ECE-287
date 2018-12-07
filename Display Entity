@@ -1,6 +1,5 @@
 ------------------------------------------------------------------------------------------------------------
---Seven Segment Display Controller
-
+--Seven Segment Display Controller 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.STD_LOGIC_unsigned.all;
@@ -14,31 +13,30 @@ entity display7 is
 end display7;
 
 architecture segController of display7 is
-    ----Write second most sig goes to second ...
+ ----Write second most sig goes to second ...
 begin
+signal segcontrol1: std_logic_vector(6 downto 0);
 Translation: process(count, internalet, clk)
-
  --signal segControl1: out std_logic_vector(6 downto 0);
  
   begin
   --signal segControl1: out std_logic_vector(6 downto 0);
   --segcontrol <= segcontrol1; 
-  
-  if(clk'event and clk='1') then --converts shift register into segments of 7 segment display that light up
-   --Since using the seven segment, some of these letters won't neccesarily look like themselves 
-    case count is
-    when "001" => --segcontrol intially all blank "11111111" 
-		if      (internalet = 0) then segControl <= "0110000";--E
+if(clk'event and clk='1') then --converts shift register into segments of 7 segment display that light up
+   --Since using the seven segment, some of these letters won't necessarily look like themselves 
+    case count is  --segControl 7-bit binary values were modified from previous lab 
+    when "001" => --segcontrol initially all blank "11111111" 
+	if      (internalet = 0) then segControl <= "0110000";--E
 	   elsif   (internalet = 1) then segControl <= "1110000";--t
-		--segcontrol1 <= segcontrol;
+               segcontrol1 <= segcontrol;
 	   end if;
-		
+ if(clk’event and clk=’1’) then
 	 when "010" =>
 		if      (internalet = 0) then segControl <= "1101111";--i 
 	   elsif   (internalet = 1) then segControl <= "0001000";--A
  	   elsif   (internalet = 2) then segControl <= "1101010";--n 
  	   elsif   (internalet = 3) then segControl <= "0001001";--M
-		--segcontrol1 <= segcontrol;
+      segcontrol1 <= segcontrol;
 	   end if;
 	 when "011" =>
 		if    (internalet = 0) then 	segControl <= "0100100";--S
@@ -49,7 +47,7 @@ Translation: process(count, internalet, clk)
  	   elsif (internalet = 5) then 	segControl <= "1101000";--k
 		elsif (internalet = 6) then 	segControl <= "0000100";--g
 		elsif (internalet = 7) then 	segControl <= "1100010";--o
-		--segcontrol1 <= segcontrol;
+      segcontrol1 <= segcontrol;
 	   end if;
 	when "100" =>
 		if    (internalet = 0) then	segControl <= "1001000";--H
@@ -64,17 +62,14 @@ Translation: process(count, internalet, clk)
 		elsif (internalet = 11)then 	segControl <= "1000100";--y
 		elsif (internalet = 12)then 	segControl <= "0010010";--Z 
 	   elsif (internalet = 13)then 	segControl <= "0001100";--q
-		--segcontrol1 <= segcontrol;
+		segcontrol1 <= segcontrol;
 	   end if;
 		--off
-	when others => segControl <= "1111111";
-	--segcontrol1 <= "1111111"; 
+	when others => segControl <= "1111111"; segcontrol1 <= "1111111"; 
     end case; 
    end if;
---	if (end1 = '1') then
-    --segcontrol1 <= segcontrol;
+if (end1 = '1') then
 --	  end if;
  end process Translation;
-    --segcontrol <= segcontrol1
 end segController;
 
